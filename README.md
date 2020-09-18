@@ -1,3 +1,31 @@
-# yang-frontend-template
+# Rock paper scissors game in Scala, with a simple Play UI
 
-template for a frontend Scala application using Play Framework
+To run:
+
+> `sbt run`
+
+> Navigate to `localhost:9000/play`
+
+
+To run unit and integration tests, and code coverage report:
+
+> `sbt clean coverage test it:test coverageReport`
+
+Features:
+
+- Player vs Computer
+- Computer vs Computer
+- ?
+
+Technical criteria:
+
+- UI not important
+- MVP, elegant and simple > feature rich
+- Scalable code to make adding features easy, such as e.g Rock, Paper, Scissors, Lizard, Spock, etc.
+
+Potential features after MVP:
+
+- Better UI
+- Main Menu navigation
+- Difficulty levels for Computer, looks at patterns in your strategy to predict how to beat you
+- DLC addons, different game modes
