@@ -1,0 +1,10 @@
+@(gameMode: Seq[String])(implicit messages: Messages, request: RequestHeader)
+
+@main("Welcome to Play") {
+  <h1>Rock, Paper Scissors</h1>
+
+  @for(i <- gameMode){
+    <p>@i</p>
+  }
+
+}
