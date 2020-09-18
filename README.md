@@ -15,7 +15,7 @@ Features:
 
 - Player vs Computer
 - Computer vs Computer
-- ?
+- Ensure Computer doesn't follow a set of choices, make it random every time the game is played.
 
 Technical criteria:
 
