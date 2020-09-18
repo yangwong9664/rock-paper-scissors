@@ -4,9 +4,9 @@ import models.RPSChoice
 import play.api.data.Forms._
 import play.api.data._
 
-class RPSSelectionForm {
+object RPSSelectionForm {
 
-  def apply(): Form[RPSChoice] = Form(
+  val rpsSelectionForm: Form[RPSChoice] = Form(
     mapping("rps.selection" -> nonEmptyText)
     (RPSChoice.apply)(RPSChoice.unapply)
   )

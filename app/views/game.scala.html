@@ -1,10 +1,18 @@
-@(gameMode: Seq[String])(implicit messages: Messages, request: RequestHeader)
+@(form: Form[RPSChoice], gameMode: Seq[String])(implicit messages: Messages, request: RequestHeader)
 
-@main("Welcome to Play") {
+@main("Rock, Paper, Scissors") {
+
+  @if(form.errors.nonEmpty){
+    <p style="color: red">Stop trying to break my game please</p>
+  }
+
   <h1>Rock, Paper Scissors</h1>
 
-  @for(i <- gameMode){
-    <p>@i</p>
+  @helper.form(action = routes.GameController.submitGame, 'id -> "rps.selection") {
+    @helper.CSRF.formField
+    @for(i <- gameMode) {
+      <input class="button" type="submit" id="@i" name="rps.selection" value="@i.capitalize">
+    }
   }
 
 }
