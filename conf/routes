@@ -1,4 +1,10 @@
 
 
 GET     /play                           controllers.GameController.game()
+GET     /submit                         controllers.GameController.submitGame()
+
+
+
+
+
 GET     /assets/*file                   controllers.Assets.versioned(path="/public", file: Asset)
