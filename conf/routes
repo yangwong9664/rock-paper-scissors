@@ -1,10 +1,10 @@
 
 
-GET     /play                           controllers.GameController.game()
-GET     /submit                         controllers.GameController.submitGame()
+GET     /play                           controllers.GameController.game(choice: Option[String])
+GET     /play-submit                    controllers.GameController.submitGame()
 
-
-
+GET     /menu                           controllers.MenuController.menu()
+GET     /menu-submit                    controllers.MenuController.submitMenu()
 
 
 GET     /assets/*file                   controllers.Assets.versioned(path="/public", file: Asset)
