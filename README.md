@@ -26,6 +26,10 @@ Technical criteria:
 Potential features after MVP:
 
 - Better UI
-- Main Menu navigation
+- Keep track of history, and a scoreboard
 - Difficulty levels for Computer, looks at patterns in your strategy to predict how to beat you
 - DLC addons, different game modes
+
+Notes:
+
+- SBT 0.13.16 is used because I'm using Intellij Ultimate 2017 and later versions do not work
