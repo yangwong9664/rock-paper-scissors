@@ -1,4 +1,5 @@
-@(form: Form[RPSChoice], gameMode: Seq[String])(implicit messages: Messages, request: RequestHeader)
+@import models.game.RPSChoice
+@(form: Form[RPSChoice], gameMode: Option[GameMode], choice: Option[String])(implicit messages: Messages, request: RequestHeader)
 
 @main("Rock, Paper, Scissors") {
 
@@ -6,13 +7,23 @@
     <p style="color: red">Stop trying to break my game please</p>
   }
 
-  <h1>Rock, Paper Scissors</h1>
+  @if(gameMode.isDefined) {
+  <h1>@gameMode.get.name</h1>
 
   @helper.form(action = routes.GameController.submitGame, 'id -> "rps.selection") {
     @helper.CSRF.formField
-    @for(i <- gameMode) {
-      <input class="button" type="submit" id="@i" name="rps.selection" value="@i.capitalize">
+    @for(i <- gameMode.get.gameModeChoices) {
+      <input class="button" type="submit" id="@i" name="rps.selection" value="@i.key">
     }
   }
+
+  @if(choice.isDefined){
+    <p>You chose: @choice.get</p>
+    }
+  } else {
+    <h1>Select a game mode:</h1>
+  }
+
+
 
 }
