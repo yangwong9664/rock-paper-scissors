@@ -15,11 +15,14 @@ libraryDependencies ++= {
   Seq(
     ws,
     guice,
-    "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % "test, it",
+    "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % "test, it",
     "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % Test,
     "de.leanovate.play-mockws" %% "play-mockws" % "2.8.0" % Test,
     "org.jsoup" % "jsoup" % "1.13.1" % Test,
-    "com.github.tomakehurst" % "wiremock-standalone" % "2.27.2" % IntegrationTest
+    "com.github.tomakehurst" % "wiremock-standalone" % "2.27.2" % IntegrationTest,
+    "org.mockito" % "mockito-scala_2.12" % "1.15.0" % Test,
+    "org.mockito" % "mockito-scala-scalatest_2.12" % "1.15.0" % Test,
+    "org.mockito" % "mockito-scala-specs2_2.12" % "1.15.0" % Test
   )
 }
 

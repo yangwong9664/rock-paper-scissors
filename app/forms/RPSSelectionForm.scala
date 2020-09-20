@@ -10,7 +10,7 @@ object RPSSelectionForm {
 
   def rpsSelectionForm(implicit session: Session): Form[RPSChoice] = Form(
     mapping("rps.selection" -> nonEmptyText
-      .verifying("error.badChoice", choice => RPS.ensureValidSelection(choice, RPS.getCurrentGameMode.get)))
+      .verifying("error.badChoice", choice => RPS.ensureValidRPSSelection(choice, RPS.getGameMode.get)))
       //controller checks game mode exists, .get here is okay for now
     (RPSChoice.apply)(RPSChoice.unapply)
   )
