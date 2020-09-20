@@ -15,7 +15,7 @@ libraryDependencies ++= {
   Seq(
     ws,
     guice,
-    "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % "test, it",
+    "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % "test, it",
     "org.scalamock" %% "scalamock-scalatest-support" % "3.6.0" % Test,
     "de.leanovate.play-mockws" %% "play-mockws" % "2.8.0" % Test,
     "org.jsoup" % "jsoup" % "1.13.1" % Test,
