@@ -4,7 +4,7 @@ To run:
 
 > `sbt run`
 
-> Navigate to `localhost:9000/play`
+> Navigate to `localhost:9000/menu`
 
 
 To run unit and integration tests, and code coverage report:
