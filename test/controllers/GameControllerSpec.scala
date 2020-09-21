@@ -44,14 +44,15 @@ class GameControllerSpec extends PlaySpec with GuiceOneAppPerTest with MockitoSu
       redirectLocation(home) mustBe Some("/menu")
     }
 
-    "render the game page given the user has selected 'classic game mode' and chose 'rock'" in {
+    "render the game page given the user has selected 'classic game mode' and chose 'rock', and AI chose paper" in {
 
       val home = controller.game()(FakeRequest(GET, "/")
-        .withSession(("gameMode", "classic"), ("gameChoice", "rock")).withCSRFToken)
+        .withSession(("gameMode", "classic"), ("gameChoice.1", "rock"), ("gameChoice.2", "paper")).withCSRFToken)
 
       status(home) mustBe OK
       contentAsString(home) must include("Rock, Paper, Scissors, Classic Mode")
       contentAsString(home) must include("You chose: rock")
+      contentAsString(home) must include("AI chose: paper")
     }
   }
 
@@ -73,7 +74,27 @@ class GameControllerSpec extends PlaySpec with GuiceOneAppPerTest with MockitoSu
         //more CSRF protection could be implemented at a later date, not needed for MVP though
       }
 
+    "return a bad request given an invalid form choice" in {
+      val home = controller.submitGame()(FakeRequest()
+        .withFormUrlEncodedBody(
+          "rps.selection" -> "hacker"
+        )
+        .withSession(("gameMode", "classic"))
+        .withCSRFToken)
 
+      status(home) mustBe BAD_REQUEST
+    }
+
+    "return a bad request given an invalid form choice for a different game mode" in {
+      val home = controller.submitGame()(FakeRequest()
+        .withFormUrlEncodedBody(
+          "rps.selection" -> "scissors"
+        )
+        .withSession(("gameMode", "rock"))
+        .withCSRFToken)
+
+      status(home) mustBe BAD_REQUEST
+    }
   }
 
 }

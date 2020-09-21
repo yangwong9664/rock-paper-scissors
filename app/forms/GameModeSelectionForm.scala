@@ -9,8 +9,10 @@ import play.api.mvc.Session
 object GameModeSelectionForm {
 
   def gameModeSelectionForm(implicit session: Session): Form[GameModeChoice] = Form(
-    mapping("game.mode.selection" -> nonEmptyText
-      .verifying("error.badChoice", choice => RPS.ensureValidGameMode(choice)))
+    mapping(
+      "game.mode.selection" -> nonEmptyText.verifying("error.badChoice", choice => RPS.ensureValidGameMode(choice)),
+      "spectator.mode" -> boolean
+    )
     (GameModeChoice.apply)(GameModeChoice.unapply)
   )
 }

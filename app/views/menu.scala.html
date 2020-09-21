@@ -1,5 +1,5 @@
 @import models.menu.GameModeChoice
-@(form: Form[GameModeChoice], allGameModes: Seq[GameMode], currentGameMode: Option[GameMode])(implicit messages: Messages, request: RequestHeader)
+@(form: Form[GameModeChoice], allGameModes: Seq[GameMode], currentGameMode: Option[GameMode], spectatorMode: Boolean = false)(implicit messages: Messages, request: RequestHeader)
 
 @main("Rock, Paper, Scissors") {
 
@@ -12,15 +12,17 @@
 
   @helper.form(action = routes.MenuController.submitMenu, 'id -> "game.mode.selection") {
     @helper.CSRF.formField
+
+    @helper.checkbox(Field(form, "spectator.mode", Seq.empty, None, Seq.empty, None), '_label -> "Spectator Mode?", if(spectatorMode){'checked -> true} else {'unchecked -> true})
+
     @for(mode <- allGameModes){
-      <div style="background: slategray; width: 40%">
-      <p style="color: white">@mode.name</p>
+      <div style="background: slategray; width: 40%; text-align: center">
+        <br>
+        <p style="color: white">@mode.name</p>
       <input class="button" type="submit" id="@mode.key" name="game.mode.selection" value="@mode.key">
       </div>
+      <br>
     }
   }
-
-
-
 
 }
