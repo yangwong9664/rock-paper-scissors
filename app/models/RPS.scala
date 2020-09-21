@@ -1,5 +1,7 @@
 package models
 
+import models.game.GameModeModel
+
 import scala.language.implicitConversions
 
 sealed trait RPS {
@@ -18,21 +20,11 @@ case object Scissors extends RPS {
 
 object RPS {
 
-  lazy val classicGameMode: GameMode = GameMode("Rock, Paper, Scissors, Classic Mode", "classic",Seq(Rock, Paper, Scissors))
+  lazy val classicGameMode: GameModeModel = GameModeModel("Rock, Paper, Scissors, Classic Mode", "classic",Seq(Rock, Paper, Scissors))
+  lazy val rockGameMode: GameModeModel = GameModeModel("Rock Rock, High Strategy Mode", "rock", Seq(Rock, Rock))
 
-  lazy val rockGameMode: GameMode = GameMode("Rock Rock, High Strategy Mode", "rock", Seq(Rock, Rock))
-
+  lazy val gameModes: Seq[GameModeModel] = Seq(classicGameMode, rockGameMode)
   //Expansions can be added here
-
-  lazy val gameModes: Seq[GameMode] = Seq(classicGameMode, rockGameMode)
-
-  def ensureValidRPSSelection(choice: String, gameMode: GameMode): Boolean = {
-    gameMode.gameModeChoices.exists(_.key == choice)
-  }
-
-  def ensureValidGameMode(choice: String): Boolean = {
-    gameModes.exists(_.key == choice)
-  }
 
   implicit def stringToRPS(string: String): RPS = {
     string match {
