@@ -1,5 +1,6 @@
 
 
+GET     /spectate                       controllers.GameController.spectate()
 GET     /play                           controllers.GameController.game()
 POST    /play-submit                    controllers.GameController.submitGame()
 
