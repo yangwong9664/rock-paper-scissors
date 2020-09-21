@@ -1,5 +1,6 @@
 @import models.game.RPSChoice
-@(form: Form[RPSChoice], gameMode: Option[GameMode], choice: Option[String] = None, choiceTwo: Option[String] = None, playerOneWin: Option[Boolean] = None, spectatorMode: Boolean = false)(implicit messages: Messages, request: RequestHeader)
+@import models.game.GameModeModel
+@(form: Form[RPSChoice], gameMode: Option[GameModeModel], choice: Option[String] = None, choiceTwo: Option[String] = None, playerOneWin: Option[Boolean] = None, spectatorMode: Option[String] = None)(implicit messages: Messages, request: RequestHeader)
 
 @main("Rock, Paper, Scissors") {
 
@@ -9,7 +10,9 @@
 
   <h1>@gameMode.get.name</h1>
 
-  @if(spectatorMode){
+  @defining(spectatorMode.getOrElse("false") == "true") { spectator =>
+
+  @if(spectator){
     <a href="@routes.GameController.spectate()"><h3>Spectate</h3></a>
   } else {
     @helper.form(action = routes.GameController.submitGame, 'id -> "rps.selection") {
@@ -20,28 +23,26 @@
     }
   }
 
-  @if(choice.isDefined  && choiceTwo.isDefined){
-    <br>
-    <p>@if(spectatorMode){AI One} else {You} chose: @choice.get</p>
-    <p>@if(spectatorMode){AI Two} else {AI} chose: @choiceTwo.get</p>
-    <br>
-    <h3>Result: @if(playerOneWin.isDefined){
-      @if(playerOneWin.get){
-        @if(spectatorMode){"AI One WINS!"} else {
-        "WIN!"
+    @if(choice.isDefined  && choiceTwo.isDefined){
+      <br>
+      <p>@if(spectator){AI One} else {You} chose: @choice.get</p>
+      <p>@if(spectator){AI Two} else {AI} chose: @choiceTwo.get</p>
+      <br>
+      <h3>Result: @if(playerOneWin.isDefined){
+        @if(playerOneWin.get){
+          @if(spectator){"AI One WINS!"} else {
+            "WIN!"
+          }
+        } else {
+          @if(spectator){"AI Two WINS!"} else {
+            "LOSE!"
+          }
         }
       } else {
-        @if(spectatorMode){"AI Two WINS!"} else {
-          "LOSE!"
-        }
+        "DRAW"!
       }
-    } else {
-      "DRAW"!
+      </h3>
     }
-    </h3>
   }
-
-
-
 
 }

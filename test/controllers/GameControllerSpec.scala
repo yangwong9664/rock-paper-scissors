@@ -1,5 +1,6 @@
 package controllers
 
+import models.SessionModel
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice._
@@ -16,14 +17,14 @@ class GameControllerSpec extends PlaySpec with GuiceOneAppPerTest with MockitoSu
 
     "render the game page given the user has selected 'classic game mode'" in {
 
-      val home = controller.game()(FakeRequest(GET, "/").withSession(("gameMode", "classic")).withCSRFToken)
+      val home = controller.game()(FakeRequest(GET, "/").withSession(("session", "{\"gameMode\": \"classic\"}")).withCSRFToken)
 
       status(home) mustBe OK
       contentAsString(home) must include("Rock, Paper, Scissors, Classic Mode")
     }
 
     "render the game page given the user has selected 'rock game mode'" in {
-      val home = controller.game()(FakeRequest(GET, "/").withSession(("gameMode", "rock")).withCSRFToken)
+      val home = controller.game()(FakeRequest(GET, "/").withSession(("session", "{\"gameMode\": \"rock\"}")).withCSRFToken)
 
       status(home) mustBe OK
       contentAsString(home) must include("Rock Rock, High Strategy Mode")
@@ -36,9 +37,8 @@ class GameControllerSpec extends PlaySpec with GuiceOneAppPerTest with MockitoSu
       redirectLocation(home) mustBe Some("/menu")
     }
 
-    "redirect to the menu page if the user has altered the session data" in {
-      val home = controller.game()(FakeRequest(GET, "/")
-        .withSession(("gameMode", "hackerman")).withCSRFToken)
+    "redirect to the menu page if the user hasn't got a game mode" in {
+      val home = controller.game()(FakeRequest(GET, "/").withSession(("session", "{}")).withCSRFToken)
 
       status(home) mustBe SEE_OTHER
       redirectLocation(home) mustBe Some("/menu")
@@ -47,7 +47,7 @@ class GameControllerSpec extends PlaySpec with GuiceOneAppPerTest with MockitoSu
     "render the game page given the user has selected 'classic game mode' and chose 'rock', and AI chose paper" in {
 
       val home = controller.game()(FakeRequest(GET, "/")
-        .withSession(("gameMode", "classic"), ("gameChoice.1", "rock"), ("gameChoice.2", "paper")).withCSRFToken)
+        .withSession(("session", "{\"gameMode\": \"classic\", \"gameChoiceOne\": \"rock\", \"gameChoiceTwo\": \"paper\"}")).withCSRFToken)
 
       status(home) mustBe OK
       contentAsString(home) must include("Rock, Paper, Scissors, Classic Mode")
@@ -58,28 +58,47 @@ class GameControllerSpec extends PlaySpec with GuiceOneAppPerTest with MockitoSu
 
   "GameController POST" must {
 
-      "render the game page given the user has selected a valid option" in {
+      "redirect to the game page given the user has selected a valid option" in {
         val home = controller.submitGame()(FakeRequest()
           .withFormUrlEncodedBody(
             "rps.selection" -> "rock"
           )
-          .withSession(("gameMode", "classic"))
+          .withSession(("session", "{\"gameMode\": \"classic\"}"))
           .withCSRFToken)
 
         status(home) mustBe SEE_OTHER
         redirectLocation(home) mustBe Some("/play")
       }
 
-      "return a Bad Request given the user does not have a CSRF token" in {
-        //more CSRF protection could be implemented at a later date, not needed for MVP though
-      }
+    "redirect to the menu page given the user has no game mode in session" in {
+      val home = controller.submitGame()(FakeRequest()
+        .withFormUrlEncodedBody(
+          "rps.selection" -> "rock"
+        )
+        .withSession(("session", "{}"))
+        .withCSRFToken)
+
+      status(home) mustBe SEE_OTHER
+      redirectLocation(home) mustBe Some("/menu")
+    }
+
+    "redirect to the menu page given the user has no session" in {
+      val home = controller.submitGame()(FakeRequest()
+        .withFormUrlEncodedBody(
+          "rps.selection" -> "rock"
+        )
+        .withCSRFToken)
+
+      status(home) mustBe SEE_OTHER
+      redirectLocation(home) mustBe Some("/menu")
+    }
 
     "return a bad request given an invalid form choice" in {
       val home = controller.submitGame()(FakeRequest()
         .withFormUrlEncodedBody(
           "rps.selection" -> "hacker"
         )
-        .withSession(("gameMode", "classic"))
+        .withSession(("session", "{\"gameMode\": \"classic\"}"))
         .withCSRFToken)
 
       status(home) mustBe BAD_REQUEST
@@ -90,10 +109,59 @@ class GameControllerSpec extends PlaySpec with GuiceOneAppPerTest with MockitoSu
         .withFormUrlEncodedBody(
           "rps.selection" -> "scissors"
         )
-        .withSession(("gameMode", "rock"))
+        .withSession(("session", "{\"gameMode\": \"rock\"}"))
         .withCSRFToken)
 
       status(home) mustBe BAD_REQUEST
+    }
+
+    "return a bad request given an empty value" in {
+      val home = controller.submitGame()(FakeRequest()
+        .withFormUrlEncodedBody(
+          "rps.selection" -> ""
+        )
+        .withSession(("session", "{\"gameMode\": \"classic\"}"))
+        .withCSRFToken)
+
+      status(home) mustBe BAD_REQUEST
+    }
+
+    "return a bad request given no form value" in {
+      val home = controller.submitGame()(FakeRequest()
+        .withSession(("session", "{\"gameMode\": \"classic\"}"))
+        .withCSRFToken)
+
+      status(home) mustBe BAD_REQUEST
+    }
+  }
+
+  "GameController GET spectatorMode" must {
+
+    "redirect to the game page given the user has selected 'classic spectator game mode'" in {
+
+      val home = controller.spectate()(FakeRequest(GET, "/")
+        .withSession(("session", "{\"gameMode\": \"classic\",\"gameSpectator\": \"true\"}")).withCSRFToken)
+
+      status(home) mustBe SEE_OTHER
+      redirectLocation(home) mustBe Some("/play")
+    }
+
+    "redirect if the user doesn't have a game mode" in {
+
+      val home = controller.spectate()(FakeRequest(GET, "/")
+        .withSession(("session", "{\"gameSpectator\": \"true\"}")).withCSRFToken)
+
+      status(home) mustBe SEE_OTHER
+      redirectLocation(home) mustBe Some("/menu")
+    }
+
+    "redirect if the user doesn't have spectator mode enables" in {
+
+      val home = controller.spectate()(FakeRequest(GET, "/")
+        .withSession(("session", "{\"gameMode\": \"classic\"}")).withCSRFToken)
+
+      status(home) mustBe SEE_OTHER
+      redirectLocation(home) mustBe Some("/menu")
     }
   }
 

@@ -1,6 +1,6 @@
 package service
 
-import models.game.RPSResult
+import models.game.{GameModeModel, RPSResult}
 import models._
 import RPS._
 
@@ -28,7 +28,7 @@ object GameLogicEngine {
     }
   }
 
-  def getRuleset(gameMode: GameMode): Map[RPS, RPSResult] = {
+  def getRuleset(gameMode: GameModeModel): Map[RPS, RPSResult] = {
     gameMode.key match {
       case "classic" => classicRules
       case "rock" => rockRules

@@ -3,13 +3,12 @@ package controllers
 import javax.inject._
 
 import forms.RPSSelectionForm._
-import models.RPS
+import models.SessionModel
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 import service.GameLogicEngine._
 import service.SessionService._
-import models.RPS._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -17,44 +16,46 @@ import scala.concurrent.{ExecutionContext, Future}
 class GameController @Inject()(cc: ControllerComponents)(implicit ec: ExecutionContext) extends AbstractController(cc) with I18nSupport with Logging {
 
   def game(): Action[AnyContent] = { Action { implicit request =>
-    getGameMode match {
-      case Some(gameMode) =>
-        //TODO refactor
-        Ok(views.html.game(rpsSelectionForm, Some(gameMode), getRPSChoice, getRPSChoiceTwo,
-          gameResult(getRPSChoice, getRPSChoiceTwo, getRuleset(gameMode)),getSpectatorMode))
-      case None => Redirect(routes.MenuController.menu())
+    getSessionModel match {
+      case SessionModel(None,_,_,_) => Redirect(routes.MenuController.menu())
+      case SessionModel(Some(gameMode),choiceOne, choiceTwo, spectator) =>
+        val gameModeModel = getGameMode(gameMode)
+        Ok(views.html.game(rpsSelectionForm(gameModeModel.get.gameModeChoices), gameModeModel, choiceOne, choiceTwo,
+          gameResult(choiceOne, choiceTwo, getRuleset(gameModeModel.get)),spectator))
     }
   }
   }
 
-  //TODO session is checked for existence in GET, possibly could add another check here if there's time, to avoid .gets
   def submitGame(): Action[AnyContent] = Action.async { implicit request =>
-    logger.info(s"Spectator Mode: $getSpectatorMode")
-    rpsSelectionForm.bindFromRequest().fold(
-      formWithErrors => {
-        Future.successful(BadRequest(views.html.game(formWithErrors, getGameMode)))
-      },
-      rpsSelection => {
-        logger.info(rpsSelection.choice)
-
-        //TODO refactor
-        val playerTwoChoose = aiChoice(getGameMode.get.gameModeChoices)
-        val playerTwoChooseUpdate = setRPSChoiceTwo(playerTwoChoose.key, getGameMode.get)
-        val playerOneChoose: RPS = rpsSelection.choice
-        val playerOneChooseUpdate = setRPSChoice(playerOneChoose.key, getGameMode.get)(playerTwoChooseUpdate)
-        Future(Redirect(routes.GameController.game()).withSession(playerOneChooseUpdate))
-      }
-    )
+    getSessionModel match {
+      case SessionModel(None, _,_,_) => Future(Redirect(routes.MenuController.menu()))
+      case SessionModel(Some(gameMode),choiceOne, choiceTwo, spectator) =>
+        val gameModeModel = getGameMode(gameMode)
+        rpsSelectionForm(gameModeModel.get.gameModeChoices).bindFromRequest().fold(
+          formWithErrors => {
+            Future.successful(BadRequest(views.html.game(formWithErrors, gameModeModel, choiceOne, choiceTwo, None, spectator)))
+          },
+          rpsSelection => {
+            val updatedModel = doGame(gameMode, Some(rpsSelection.choice))
+            Future(Redirect(routes.GameController.game()).withSession(updateSession(updatedModel)))
+          }
+        )
+    }
   }
 
   def spectate(): Action[AnyContent] = Action.async { implicit request =>
-    logger.info(s"Spectator Mode: $getSpectatorMode")
-    //TODO refactor
-    val playerTwoChoose = aiChoice(getGameMode.get.gameModeChoices)
-    val playerTwoChooseUpdate = setRPSChoiceTwo(playerTwoChoose.key, getGameMode.get)
-    val playerOneChoose: RPS = aiChoice(getGameMode.get.gameModeChoices)
-    val playerOneChooseUpdate = setRPSChoice(playerOneChoose.key, getGameMode.get)(playerTwoChooseUpdate)
-    Future(Redirect(routes.GameController.game()).withSession(playerOneChooseUpdate))
+    getSessionModel match {
+      case SessionModel(Some(gameMode),_, _, Some(_)) =>
+        val updatedModel = doGame(gameMode, None)
+        Future(Redirect(routes.GameController.game()).withSession(updateSession(updatedModel)))
+      case _ => Future(Redirect(routes.MenuController.menu()))
+    }
+  }
+  private def doGame(gameMode: String, humanPlayerChoice: Option[String])(implicit request: Request[AnyContent]): SessionModel = {
+    val gameModeModel = getGameMode(gameMode).get
+    val playerOneChoose = humanPlayerChoice.getOrElse(aiChoice(gameModeModel.gameModeChoices).key)
+    val playerTwoChoose = aiChoice(gameModeModel.gameModeChoices).key
+    getSessionModel.copy(gameChoiceOne = Some(playerOneChoose), gameChoiceTwo = Some(playerTwoChoose))
   }
 
 }

@@ -3,7 +3,7 @@ package controllers
 import javax.inject._
 
 import forms.GameModeSelectionForm._
-import models.RPS
+import models.{GameSpectator, RPS}
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc._
@@ -14,31 +14,26 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class MenuController @Inject()(cc: ControllerComponents)(implicit ec: ExecutionContext) extends AbstractController(cc) with I18nSupport with Logging {
 
+  //TODO .get session model refactor
+
   def menu(): Action[AnyContent] = Action { implicit request =>
-    Ok(views.html.menu(gameModeSelectionForm, RPS.gameModes, getGameMode, getSpectatorMode))
+    val sessionObject = ensureSession
+    Ok(views.html.menu(gameModeSelectionForm, RPS.gameModes, getSessionModel(sessionObject).gameSpectator))
+      .withSession(sessionObject)
   }
 
   def submitMenu(): Action[AnyContent] = Action.async { implicit request =>
+    val sessionObject = getSessionModel
     gameModeSelectionForm.bindFromRequest().fold(
       formWithErrors => {
-        Future.successful(BadRequest(views.html.menu(formWithErrors, RPS.gameModes, getGameMode)))
+        Future.successful(BadRequest(views.html.menu(formWithErrors, RPS.gameModes)))
       },
       gameModeSelection => {
-        //TODO refactor
-        logger.info(gameModeSelection.spectatorMode.toString)
-        val gameModeUpdate = setGameMode(gameModeSelection.choice)
-        val spectatorModeUpdate = spectatorMode(gameModeSelection.spectatorMode)(gameModeUpdate)
-        Future(Redirect(routes.GameController.game()).withSession(spectatorModeUpdate))
+        val gameModeUpdate = setGameMode(gameModeSelection.choice,sessionObject)
+        val spectatorUpdate = setSpectatorMode(gameModeSelection.spectatorMode.toString, gameModeUpdate)
+        Future(Redirect(routes.GameController.game()).withSession(updateSession(spectatorUpdate)))
       }
     )
-  }
-
-  private def spectatorMode(spectatorModeSelection: Boolean)(implicit session: Session) = {
-    (spectatorModeSelection, getSpectatorMode) match {
-      case (true, false) => setSpectatorMode(true)(session)
-      case (false, true) => unsetSpectatorMode(true)(session)
-      case _ => session
-    }
   }
 
   def restart(): Action[AnyContent] = Action { implicit request =>
