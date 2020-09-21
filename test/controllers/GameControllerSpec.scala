@@ -1,6 +1,5 @@
 package controllers
 
-import models.SessionModel
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play._
 import org.scalatestplus.play.guice._
