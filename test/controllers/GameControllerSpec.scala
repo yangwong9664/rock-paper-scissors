@@ -70,6 +70,29 @@ class GameControllerSpec extends PlaySpec with GuiceOneAppPerTest with MockitoSu
         redirectLocation(home) mustBe Some("/play")
       }
 
+    "redirect to the menu page given the user has no game mode in session" in {
+      val home = controller.submitGame()(FakeRequest()
+        .withFormUrlEncodedBody(
+          "rps.selection" -> "rock"
+        )
+        .withSession(("session", "{}"))
+        .withCSRFToken)
+
+      status(home) mustBe SEE_OTHER
+      redirectLocation(home) mustBe Some("/menu")
+    }
+
+    "redirect to the menu page given the user has no session" in {
+      val home = controller.submitGame()(FakeRequest()
+        .withFormUrlEncodedBody(
+          "rps.selection" -> "rock"
+        )
+        .withCSRFToken)
+
+      status(home) mustBe SEE_OTHER
+      redirectLocation(home) mustBe Some("/menu")
+    }
+
     "return a bad request given an invalid form choice" in {
       val home = controller.submitGame()(FakeRequest()
         .withFormUrlEncodedBody(
