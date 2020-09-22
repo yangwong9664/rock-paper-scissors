@@ -1,32 +1,31 @@
 package service
 
-import models.RPS.gameModes
+import app.GameConfig._
 import models.game.GameModeModel
-import models.{SessionCookieName, SessionKeys, SessionModel}
-import play.api.Logging
+import models.{SessionCookieName, SessionModel}
 import play.api.libs.json.Json
 import play.api.mvc.Session
 
-object SessionService extends Logging {
+object SessionService {
   //service that handles all variables inside Session
 
+  //check is there is a session, create new if non-existant
   def ensureSession(implicit session: Session): Session = {
-    session.get(SessionCookieName.key) match {
-      case Some(_) => session
-      case None => session. +(SessionCookieName.key, Json.toJson(SessionModel()).toString())
-    }
+    session.get(SessionCookieName.key)
+      .fold(session. +(SessionCookieName.key, Json.toJson(SessionModel()).toString()): Session){ _ => session}
   }
 
+  //update session variables
   def updateSession(sessionModel: SessionModel)(implicit session: Session): Session = {
     session. +(SessionCookieName.key, Json.toJson(sessionModel).toString())
   }
 
-  def getSessionModel(implicit session: Session): SessionModel = {
-    val sessionModel = sessionToSessionModel(ensureSession)
-    println(Json.prettyPrint(Json.toJson(sessionModel)))
-    sessionModel
+  //check is user has session
+  def validateSession(implicit session: Session): Option[SessionModel] = {
+    session.get(SessionCookieName.key).map(_ => sessionToSessionModel(session))
   }
 
+  //get session model from session
   def sessionToSessionModel(session: Session): SessionModel = {
     session.get(SessionCookieName.key).map(Json.parse(_).as[SessionModel]).getOrElse(SessionModel())
   }
@@ -52,6 +51,7 @@ object SessionService extends Logging {
       case Some(spectator) if spectator == choice => sessionModel
       case _ => sessionModel.copy(gameSpectator = Some(choice), gameChoiceOne = None, gameChoiceTwo = None)
     }
+    //checks if AI vs AI is enabled, currently a Boolean string, could be refactored
   }
 
 }

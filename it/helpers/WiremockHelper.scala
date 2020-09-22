@@ -1,19 +1,17 @@
 package helpers
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.headers._
-import akka.http.scaladsl.model.{HttpMethods, HttpRequest, HttpResponse}
-import akka.stream.ActorMaterializer
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
+import models.SessionModel
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import play.api.libs.json.Json
 import play.api.libs.ws.{DefaultWSCookie, WSClient, WSResponse}
-import play.filters.csrf.{CSRFConfigProvider, CSRFFilter}
+import play.shaded.ahc.io.netty.handler.codec.http.cookie.DefaultCookie
 
 import scala.concurrent.Future
 
@@ -62,18 +60,33 @@ trait WiremockHelper {
 
   def resetWiremock(): Unit = WireMock.reset()
 
-  def buildGetClient(path: String): Future[HttpResponse] = Http().singleRequest(
-    HttpRequest(
-      HttpMethods.GET,
-      uri = s"http://localhost:$port$path"
-    )
-  )
+  lazy val csrfCookie = DefaultWSCookie("CSRF-Token","cookie.value")
+  lazy val playLangCookie = DefaultWSCookie("PLAY_LANG", "en-GB")
 
-  def buildPostClient(path: String, body: String): Future[WSResponse] = {
+  //TODO refactor these methods
+  def buildGetClient(path: String, sessionModel: Option[SessionModel] = None, followRedirects: Boolean = false): Future[WSResponse] = {
+    if(sessionModel.isDefined){
+      ws.url(s"http://localhost:$port$path")
+        .withFollowRedirects(followRedirects)
+        .withCookies(csrfCookie, playLangCookie) //TODO get cookie tests working with session
+        .get()
+    }
     ws.url(s"http://localhost:$port$path")
-      .addCookies(DefaultWSCookie("CSRF-Token","cookie.value"),
-        DefaultWSCookie("PLAY_LANG", "en-GB"))
-      .post(body)
+      .withFollowRedirects(followRedirects)
+        .withCookies(csrfCookie, playLangCookie)
+      .get()
   }
 
+  def buildPostClient(path: String, body: String, sessionModel: Option[SessionModel] = None, followRedirects: Boolean = false): Future[WSResponse] = {
+    if(sessionModel.isDefined){
+      ws.url(s"http://localhost:$port$path")
+        .withFollowRedirects(followRedirects)
+        .withCookies(csrfCookie, playLangCookie) //TODO get cookie tests working with session
+        .post(body)
+    }
+    ws.url(s"http://localhost:$port$path")
+      .withFollowRedirects(followRedirects)
+      .withCookies(csrfCookie, playLangCookie)
+      .post(body)
+  }
 }

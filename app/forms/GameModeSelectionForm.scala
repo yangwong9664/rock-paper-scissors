@@ -1,6 +1,6 @@
 package forms
 
-import models.RPS.gameModes
+import app.GameConfig._
 import models.menu.GameModeChoice
 import play.api.data.Forms._
 import play.api.data._
