@@ -6,3 +6,4 @@ work sessions, hours spent, description
 4,2, unit testing, session manipulation
 5,2, added game engine, Player vs AI, AI vs AI
 6,1.5, code refactor, controller tests
+7,0.5, code refactor, controller and IT tests

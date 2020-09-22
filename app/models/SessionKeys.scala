@@ -24,7 +24,7 @@ case object GameChoiceTwo extends SessionKeys {
 
 object SessionKeys {
 
-  implicit def stringToGameMode(string: String): SessionKeys = {
+  implicit def stringToSessionKey(string: String): SessionKeys = {
     string match {
       case GameMode.key => GameMode
       case GameSpectator.key => GameSpectator

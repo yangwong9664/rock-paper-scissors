@@ -1,8 +1,8 @@
 package service
 
-import models.game.{GameModeModel, RPSResult}
+import models.RPS._
 import models._
-import RPS._
+import models.game.RPSResult
 
 import scala.util.Random
 
@@ -10,28 +10,17 @@ object GameLogicEngine {
 
   def gameResult(playerOne: Option[String], playerTwo: Option[String], ruleset: Map[RPS, RPSResult]): Option[Boolean] = {
     (playerOne,playerTwo) match {
-      case (Some(one), Some(two)) =>
-        calculateGameResult(one,two, ruleset)
+      case (Some(one), Some(two)) => calculateGameResult(one,two, ruleset)
       case _ => None
     }
   }
 
   //returns a winning player, or None if there's a draw
-  def calculateGameResult(challengerOneChoice: RPS, challengerTwoChoice: RPS, ruleset: Map[RPS, RPSResult]): Option[Boolean] = {
+  private def calculateGameResult(challengerOneChoice: RPS, challengerTwoChoice: RPS, ruleset: Map[RPS, RPSResult]): Option[Boolean] = {
     ruleset(challengerOneChoice) match {
-      case result if result.win.contains(challengerTwoChoice) => //Player1 wins
-        Some(true)
-      case result if result.lose.contains(challengerTwoChoice) => //Player1 loses
-        Some(false)
-      case _ => //Draw
-        None
-    }
-  }
-
-  def getRuleset(gameMode: GameModeModel): Map[RPS, RPSResult] = {
-    gameMode.key match {
-      case "classic" => classicRules
-      case "rock" => rockRules
+      case result if result.win.contains(challengerTwoChoice) => Some(true) //Player1 wins
+      case result if result.lose.contains(challengerTwoChoice) => Some(false) //Player1 loses
+      case _ => None //Draw
     }
   }
 
@@ -39,19 +28,4 @@ object GameLogicEngine {
     val rand = Random.nextInt(choices.length)
     choices(rand)
   }
-
-  //could create a CSV file matrix, but this is MVP
-  val classicRules = Map[RPS, RPSResult](
-    Rock -> RPSResult(Seq(Scissors), Seq(Paper)),
-    Paper -> RPSResult(Seq(Rock), Seq(Scissors)),
-    Scissors -> RPSResult(Seq(Paper), Seq(Rock))
-  )
-
-  val rockRules = Map[RPS, RPSResult](
-    Rock -> RPSResult(Seq.empty, Seq.empty)
-  )
-
-
-
-
 }
