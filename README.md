@@ -1,3 +1,5 @@
+NOTE: The code could be simplified a lot, by sorting the Rock Paper Scissor options in a list and comparing based on odd/even numbering.
+
 # Rock paper scissors game in Scala, with a simple Play UI
 
 To run:
